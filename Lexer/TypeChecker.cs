@@ -162,6 +162,47 @@ namespace Lexer
 
                     return currentType;
 
+                case ArrayExpression arrayExpr:
+                    TypeKind resultType = TypeKind.Unknown;
+                    foreach (var elem in arrayExpr.Elements)
+                    {
+                        TypeKind elemType = VisitExpression(elem);
+                        if (resultType == TypeKind.Unknown) resultType = elemType;
+                        else if (elemType != TypeKind.Unknown && elemType != resultType)
+                        {
+                            errors.Add($"[Type Error] Array elements must be of the same type. Found {TypeName(resultType)} and {TypeName(elemType)}.");
+                        }
+                    }
+                    return TypeKind.Array;
+
+                case IndexExpression indexExpr:
+                    TypeKind arraySrcType = VisitExpression(indexExpr.Array);
+                    TypeKind idxType = VisitExpression(indexExpr.Index);
+                    if (arraySrcType != TypeKind.Array && arraySrcType != TypeKind.Unknown)
+                    {
+                        errors.Add($"[Type Error] Cannot index non-array type {TypeName(arraySrcType)}.");
+                    }
+                    if (idxType != TypeKind.Number && idxType != TypeKind.Unknown)
+                    {
+                        errors.Add($"[Type Error] Array index must be a number, got {TypeName(idxType)}.");
+                    }
+                    return TypeKind.Unknown;
+
+                case IndexAssignExpression idxAssign:
+                    TypeKind arrType = VisitExpression(idxAssign.Array);
+                    TypeKind indexType = VisitExpression(idxAssign.Index);
+                    TypeKind valType = VisitExpression(idxAssign.Value);
+
+                    if (arrType != TypeKind.Array && arrType != TypeKind.Unknown)
+                    {
+                        errors.Add($"[Type Error] Cannot assign to index of non-array type {TypeName(arrType)}.");
+                    }
+                    if (indexType != TypeKind.Number && indexType != TypeKind.Unknown)
+                    {
+                        errors.Add($"[Type Error] Array index must be a number, got {TypeName(indexType)}.");
+                    }
+                    return valType;
+
                 case BinaryExpression binary:
                     return CheckBinary(binary);
 

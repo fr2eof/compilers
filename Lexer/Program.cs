@@ -1,28 +1,20 @@
-using Lexer;
+﻿using Lexer;
 
 Console.WriteLine("=== Учебный Компилятор ===");
 
 // Исходный код на нашем языке
 string testCode = @"
-fun add(a: number, b: number): number {
-    if (a == 0) {
-        return b;
-    }
-    if (false) {
-        print(""This is dead code!"");
-    }
-    return a + b;
-    print(""This is also dead code after return!"");
-}
+var arr: array = [10, 20, 30];
+print(""Initial array:"");
+print(arr);
 
-var x: number = 10;
-var y: number = 20;
-var foldedNumber: number = 2 + 3 * 4;
-var greeting: string = ""Hello, "" + ""world!"";
-var result: number = add(x, y);
-print(foldedNumber);
-print(greeting);
-print(result);
+arr[1] = 50;
+print(""After setting arr[1] = 50:"");
+print(arr);
+
+var sum: number = arr[0] + arr[1];
+print(""Sum of arr[0] and arr[1]:"");
+print(sum);
 ";
 
 Console.WriteLine("Исходный код:");
@@ -36,7 +28,6 @@ var lexer = new Lexer.Lexer(testCode);
 var tokens = lexer.Tokenize();
 
 // Выводим результат токенизации (превращения текста в слова).
-// Закомментируйте foreach если вывод слишком длинный.
 foreach (var token in tokens)
 {
     Console.WriteLine(token);

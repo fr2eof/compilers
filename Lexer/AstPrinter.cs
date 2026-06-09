@@ -114,6 +114,27 @@ namespace Lexer
                     PrintNode(assignment.Value, childIndent, true);
                     break;
 
+                case ArrayExpression arrayExpr:
+                    Console.WriteLine($"ArrayExpression");
+                    for (int i = 0; i < arrayExpr.Elements.Count; i++)
+                    {
+                        PrintNode(arrayExpr.Elements[i], childIndent, i == arrayExpr.Elements.Count - 1);
+                    }
+                    break;
+
+                case IndexExpression indexExpr:
+                    Console.WriteLine($"IndexExpression");
+                    PrintNode(indexExpr.Array, childIndent, false);
+                    PrintNode(indexExpr.Index, childIndent, true);
+                    break;
+
+                case IndexAssignExpression idxAssign:
+                    Console.WriteLine($"IndexAssignExpression");
+                    PrintNode(idxAssign.Array, childIndent, false);
+                    PrintNode(idxAssign.Index, childIndent, false);
+                    PrintNode(idxAssign.Value, childIndent, true);
+                    break;
+
                 case NumberExpression number:
                     Console.WriteLine($"Number: {number.Value}");
                     break;

@@ -102,6 +102,34 @@ namespace Lexer
                     environment.Assign(assignExpression.Name, assignedValue);
                     return assignedValue;
 
+                case ArrayExpression arrayExpr:
+                    var arrayValues = new List<object?>();
+                    foreach (var elem in arrayExpr.Elements)
+                    {
+                        arrayValues.Add(Eval(elem));
+                    }
+                    return arrayValues;
+
+                case IndexExpression indexExpr:
+                    var srcArray = Eval(indexExpr.Array) as List<object?>;
+                    if (srcArray == null) throw new InvalidOperationException("[Runtime Error] Trying to index a non-array.");
+                    var getIdxObj = Eval(indexExpr.Index);
+                    if (getIdxObj is not double getIdxStr) throw new InvalidOperationException("[Runtime Error] Array index must be a number.");
+                    int getIdx = (int)getIdxStr;
+                    if (getIdx < 0 || getIdx >= srcArray.Count) throw new InvalidOperationException($"[Runtime Error] Index out of bounds: {getIdx}");
+                    return srcArray[getIdx];
+
+                case IndexAssignExpression idxAssign:
+                    var dstArray = Eval(idxAssign.Array) as List<object?>;
+                    if (dstArray == null) throw new InvalidOperationException("[Runtime Error] Trying to assign to a non-array.");
+                    var setIdxObj = Eval(idxAssign.Index);
+                    if (setIdxObj is not double setIdxStr) throw new InvalidOperationException("[Runtime Error] Array index must be a number.");
+                    int setIdx = (int)setIdxStr;
+                    if (setIdx < 0 || setIdx >= dstArray.Count) throw new InvalidOperationException($"[Runtime Error] Index out of bounds: {setIdx}");
+                    var valToSet = Eval(idxAssign.Value);
+                    dstArray[setIdx] = valToSet;
+                    return valToSet;
+
                 case CallExpression callExpression:
                     return EvalCall(callExpression);
 
@@ -278,6 +306,7 @@ namespace Lexer
                 null => "null",
                 double number => number.ToString(CultureInfo.InvariantCulture),
                 bool boolean => boolean ? "true" : "false",
+                List<object?> list => "[" + string.Join(", ", list.Select(v => FormatValue(v))) + "]",
                 _ => value.ToString() ?? string.Empty,
             };
         }

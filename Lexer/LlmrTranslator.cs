@@ -125,7 +125,29 @@ namespace Lexer
                     var rhs = TranslateExpression(assignExp.Value, output);
                     output.Add(new AssignmentInstruction(assignExp.Name, rhs));
                     return assignExp.Name;
+                case ArrayExpression arrayExpr:
+                    var arrayTemp = NewTemp();
+                    output.Add(new AssignmentInstruction(arrayTemp, "[array]"));
+                    for (int i = 0; i < arrayExpr.Elements.Count; i++)
+                    {
+                        var eStr = TranslateExpression(arrayExpr.Elements[i], output);
+                        output.Add(new AssignmentInstruction($"{arrayTemp}[{i}]", eStr));
+                    }
+                    return arrayTemp;
 
+                case IndexExpression indexExpr:
+                    var srcStr = TranslateExpression(indexExpr.Array, output);
+                    var idxStr = TranslateExpression(indexExpr.Index, output);
+                    var tempStr = NewTemp();
+                    output.Add(new AssignmentInstruction(tempStr, $"{srcStr}[{idxStr}]"));
+                    return tempStr;
+
+                case IndexAssignExpression idxAssign:
+                    var dstStr = TranslateExpression(idxAssign.Array, output);
+                    var idxSetStr = TranslateExpression(idxAssign.Index, output);
+                    var valStr = TranslateExpression(idxAssign.Value, output);
+                    output.Add(new AssignmentInstruction($"{dstStr}[{idxSetStr}]", valStr));
+                    return valStr;
                 case BinaryExpression binExp:
                     var left = TranslateExpression(binExp.Left, output);
                     var right = TranslateExpression(binExp.Right, output);

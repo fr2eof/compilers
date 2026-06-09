@@ -80,7 +80,7 @@ namespace Lexer
                     VisitExpression(loop.Condition);
                     VisitStatement(loop.Body);
 
-                    // Body may not execute at all - intersect to keep only definitely-initialized vars
+                    // Body may not execute at all — intersect to keep only definitely-initialized vars
                     env = Intersect(env, beforeWhile);
                     break;
             }
@@ -114,6 +114,18 @@ namespace Lexer
 
                 case UnaryExpression unary:
                     VisitExpression(unary.Right);
+                    break;
+                case ArrayExpression arrayExpr:
+                    foreach (var expr in arrayExpr.Elements) VisitExpression(expr);
+                    break;
+                case IndexExpression indexExpr:
+                    VisitExpression(indexExpr.Array);
+                    VisitExpression(indexExpr.Index);
+                    break;
+                case IndexAssignExpression idxAssign:
+                    VisitExpression(idxAssign.Array);
+                    VisitExpression(idxAssign.Index);
+                    VisitExpression(idxAssign.Value);
                     break;
                 case CallExpression call:
                     foreach (var arg in call.Arguments)

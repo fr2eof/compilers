@@ -200,6 +200,10 @@ namespace Lexer
                 {
                     return new AssignExpression(variable.Name, value);
                 }
+                else if (expression is IndexExpression indexExpr)
+                {
+                    return new IndexAssignExpression(indexExpr.Array, indexExpr.Index, value);
+                }
 
                 throw Error(equals, "Invalid assignment target.");
             }
@@ -307,18 +311,31 @@ namespace Lexer
         {
             Expression expr = ParsePrimary();
 
-            if (expr is VariableExpression variable && Match(TokenType.LPAREN))
+            while (true)
             {
-                List<Expression> arguments = new List<Expression>();
-                if (!Check(TokenType.RPAREN))
+                if (expr is VariableExpression variable && Match(TokenType.LPAREN))
                 {
-                    do
+                    List<Expression> arguments = new List<Expression>();
+                    if (!Check(TokenType.RPAREN))
                     {
-                        arguments.Add(ParseExpression());
-                    } while (Match(TokenType.COMMA));
+                        do
+                        {
+                            arguments.Add(ParseExpression());
+                        } while (Match(TokenType.COMMA));
+                    }
+                    Consume(TokenType.RPAREN, "Expected ')' after arguments.");
+                    expr = new CallExpression(variable.Name, arguments);
                 }
-                Consume(TokenType.RPAREN, "Expected ')' after arguments.");
-                return new CallExpression(variable.Name, arguments);
+                else if (Match(TokenType.LBRACKET))
+                {
+                    Expression index = ParseExpression();
+                    Consume(TokenType.RBRACKET, "Expected ']' after index.");
+                    expr = new IndexExpression(expr, index);
+                }
+                else
+                {
+                    break;
+                }
             }
 
             return expr;
@@ -326,6 +343,20 @@ namespace Lexer
 
         private Expression ParsePrimary()
         {
+            if (Match(TokenType.LBRACKET))
+            {
+                List<Expression> elements = new List<Expression>();
+                if (!Check(TokenType.RBRACKET))
+                {
+                    do
+                    {
+                        elements.Add(ParseExpression());
+                    } while (Match(TokenType.COMMA));
+                }
+                Consume(TokenType.RBRACKET, "Expected ']' after array elements.");
+                return new ArrayExpression(elements);
+            }
+
             if (Match(TokenType.NUMBER))
             {
                 double value = double.Parse(Previous().Value, System.Globalization.CultureInfo.InvariantCulture);
@@ -444,7 +475,12 @@ namespace Lexer
                 return TypeKind.Bool;
             }
 
-            throw Error(Peek(), "Expected type name 'number', 'string' or 'boolean'.");
+            if (Match(TokenType.TYPE_ARRAY))
+            {
+                return TypeKind.Array;
+            }
+
+            throw Error(Peek(), "Expected type name 'number', 'string', 'boolean' or 'array'.");
         }
 
         private static Exception Error(Token token, string message)

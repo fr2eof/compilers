@@ -5,6 +5,7 @@ namespace Lexer
         Unknown,
         Number,
         String,
-        Bool
+        Bool,
+        Array
     }
 }

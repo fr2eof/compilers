@@ -80,13 +80,49 @@ namespace Lexer
 
     public class CallExpression : Expression
     {
-        public string Callee { get; } // using string for simplicty since we call by name for now, but commonly it is Expression Callee
+        public string Callee { get; } 
         public List<Expression> Arguments { get; }
 
         public CallExpression(string callee, List<Expression> arguments)
         {
             Callee = callee;
             Arguments = arguments;
+        }
+    }
+
+    public class ArrayExpression : Expression
+    {
+        public List<Expression> Elements { get; }
+
+        public ArrayExpression(List<Expression> elements)
+        {
+            Elements = elements;
+        }
+    }
+
+    public class IndexExpression : Expression
+    {
+        public Expression Array { get; }
+        public Expression Index { get; }
+
+        public IndexExpression(Expression array, Expression index)
+        {
+            Array = array;
+            Index = index;
+        }
+    }
+
+    public class IndexAssignExpression : Expression
+    {
+        public Expression Array { get; }
+        public Expression Index { get; }
+        public Expression Value { get; }
+
+        public IndexAssignExpression(Expression array, Expression index, Expression value)
+        {
+            Array = array;
+            Index = index;
+            Value = value;
         }
     }
 }

@@ -111,6 +111,7 @@ namespace Lexer
                 "number" => new Token(TokenType.TYPE_NUMBER, value, start),
                 "string" => new Token(TokenType.TYPE_STRING, value, start),
                 "boolean" => new Token(TokenType.TYPE_BOOLEAN, value, start),
+                "array" => new Token(TokenType.TYPE_ARRAY, value, start),
                 _ => new Token(TokenType.ID, value, start)
             };
         }
@@ -206,6 +207,10 @@ namespace Lexer
                     return new Token(TokenType.LBRACE, "{", start);
                 case '}':
                     return new Token(TokenType.RBRACE, "}", start);
+                case '[':
+                    return new Token(TokenType.LBRACKET, "[", start);
+                case ']':
+                    return new Token(TokenType.RBRACKET, "]", start);
                 case ':':
                     return new Token(TokenType.COLON, ":", start);
                 case ';':
