@@ -11,6 +11,7 @@ namespace Lexer
         private readonly List<string> errors = new();
         private readonly Dictionary<string, TypeKind> variableTypes = new();
         private readonly Dictionary<string, FunctionStatement> functions = new();
+        private TypeKind? currentReturnType;
 
         public IReadOnlyList<string> Errors => errors;
 
@@ -30,12 +31,17 @@ namespace Lexer
                     functions[function.Name] = function;
 
                     var beforeFunc = Copy(variableTypes);
+                    var savedReturnType = currentReturnType;
+                    currentReturnType = function.ReturnType;
+
                     foreach (var param in function.Parameters)
                     {
                         variableTypes[param.Name] = param.Type;
                     }
+
                     VisitStatement(function.Body);
 
+                    currentReturnType = savedReturnType;
                     variableTypes.Clear();
                     foreach (var kv in beforeFunc)
                     {
@@ -46,7 +52,17 @@ namespace Lexer
                 case ReturnStatement returnStmt:
                     if (returnStmt.Value is not null)
                     {
-                        VisitExpression(returnStmt.Value);
+                        TypeKind returnValueType = VisitExpression(returnStmt.Value);
+                        if (currentReturnType.HasValue &&
+                            returnValueType != TypeKind.Unknown &&
+                            returnValueType != currentReturnType.Value)
+                        {
+                            errors.Add($"[Type Error] Return value of type {TypeName(returnValueType)} does not match function return type {TypeName(currentReturnType.Value)}.");
+                        }
+                    }
+                    else if (currentReturnType.HasValue && currentReturnType.Value != TypeKind.Unknown)
+                    {
+                        errors.Add($"[Type Error] Function with return type {TypeName(currentReturnType.Value)} must return a value.");
                     }
                     break;
 
@@ -205,6 +221,12 @@ namespace Lexer
 
                 case BinaryExpression binary:
                     return CheckBinary(binary);
+
+                case UnaryExpression unary:
+                    return CheckUnary(unary);
+
+                case CallExpression call:
+                    return CheckCall(call);
 
                 default:
                     return TypeKind.Unknown;

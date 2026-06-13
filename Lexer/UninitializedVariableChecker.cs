@@ -83,6 +83,24 @@ namespace Lexer
                     // Body may not execute at all — intersect to keep only definitely-initialized vars
                     env = Intersect(env, beforeWhile);
                     break;
+
+                case FunctionStatement function:
+                    var savedEnv = Copy(env);
+                    foreach (var param in function.Parameters)
+                    {
+                        env[param.Name] = (0, true);
+                    }
+
+                    VisitStatement(function.Body);
+                    env = savedEnv;
+                    break;
+
+                case ReturnStatement returnStmt:
+                    if (returnStmt.Value is not null)
+                    {
+                        VisitExpression(returnStmt.Value);
+                    }
+                    break;
             }
         }
 

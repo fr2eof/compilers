@@ -2,8 +2,25 @@
 
 Console.WriteLine("=== Учебный Компилятор ===");
 
-// Исходный код на нашем языке
+// Исходный код на нашем языке — демонстрация всех этапов пайплайна
 string testCode = @"
+fun factorial(n: number): number {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+var folded: number = 2 + 3 * 4;
+print(""Constant folding:"");
+print(folded);
+
+if (false) {
+    print(""This dead branch must be removed"");
+}
+
+var unused: number = 42;
+
 var arr: array = [10, 20, 30];
 print(""Initial array:"");
 print(arr);
@@ -15,6 +32,9 @@ print(arr);
 var sum: number = arr[0] + arr[1];
 print(""Sum of arr[0] and arr[1]:"");
 print(sum);
+
+print(""Factorial of 5:"");
+print(factorial(5));
 ";
 
 Console.WriteLine("Исходный код:");

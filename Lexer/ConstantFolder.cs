@@ -83,6 +83,20 @@ namespace Lexer
                         call.Callee,
                         call.Arguments.Select(OptimizeExpression).ToList());
 
+                case ArrayExpression arrayExpression:
+                    return new ArrayExpression(arrayExpression.Elements.Select(OptimizeExpression).ToList());
+
+                case IndexExpression indexExpression:
+                    return new IndexExpression(
+                        OptimizeExpression(indexExpression.Array),
+                        OptimizeExpression(indexExpression.Index));
+
+                case IndexAssignExpression indexAssignExpression:
+                    return new IndexAssignExpression(
+                        OptimizeExpression(indexAssignExpression.Array),
+                        OptimizeExpression(indexAssignExpression.Index),
+                        OptimizeExpression(indexAssignExpression.Value));
+
                 default:
                     return expression;
             }
@@ -102,6 +116,18 @@ namespace Lexer
                 binary.Operator == TokenType.PLUS)
             {
                 return new StringExpression(leftString.Value + rightString.Value);
+            }
+
+            if (left is BooleanExpression leftBoolean && right is BooleanExpression rightBoolean)
+            {
+                return binary.Operator switch
+                {
+                    TokenType.AND => new BooleanExpression(leftBoolean.Value && rightBoolean.Value),
+                    TokenType.OR => new BooleanExpression(leftBoolean.Value || rightBoolean.Value),
+                    TokenType.EQEQ => new BooleanExpression(leftBoolean.Value == rightBoolean.Value),
+                    TokenType.NEQ => new BooleanExpression(leftBoolean.Value != rightBoolean.Value),
+                    _ => new BinaryExpression(left, binary.Operator, right),
+                };
             }
 
             return new BinaryExpression(left, binary.Operator, right);

@@ -164,6 +164,7 @@ namespace Lexer
                 TypeKind.Number => "number",
                 TypeKind.String => "string",
                 TypeKind.Bool => "boolean",
+                TypeKind.Array => "array",
                 _ => "unknown"
             };
         }

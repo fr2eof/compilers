@@ -68,6 +68,29 @@ namespace Lexer
                     VisitExpression(loop.Condition);
                     VisitStatement(loop.Body);
                     break;
+
+                case FunctionStatement function:
+                    var savedDeclarations = Copy(declarations);
+                    foreach (var param in function.Parameters)
+                    {
+                        declarations[param.Name] = (0, false);
+                    }
+
+                    VisitStatement(function.Body);
+
+                    declarations.Clear();
+                    foreach (var kv in savedDeclarations)
+                    {
+                        declarations[kv.Key] = kv.Value;
+                    }
+                    break;
+
+                case ReturnStatement returnStmt:
+                    if (returnStmt.Value is not null)
+                    {
+                        VisitExpression(returnStmt.Value);
+                    }
+                    break;
             }
         }
 
@@ -116,8 +139,14 @@ namespace Lexer
                     }
                     break;
 
-                    // NumberExpression / StringExpression — no variables to track
+                    // NumberExpression / StringExpression / BooleanExpression — no variables to track
             }
+        }
+
+        private static Dictionary<string, (int Position, bool Used)> Copy(
+            Dictionary<string, (int Position, bool Used)> source)
+        {
+            return new Dictionary<string, (int Position, bool Used)>(source);
         }
     }
 }
